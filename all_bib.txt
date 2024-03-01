@@ -1,0 +1,51 @@
+=================================A=========================
+
+Чтобы перейти и увидеть путь до библиотеки надо зажать контрол и нажать по библиотеке
+
+Для разархивирования - zipfile
+
+Для изменения формата xml - !git clone https://github.com/bjornstenger/xml2yolo.git 
+
+Удаление файлов определённого формата - os
+
+Для объединения папок - os, distutils.dir_util 
+
+Для проверки размера данных - pathlib
+
+Для проверки пропусков в разметке - os
+
+Для просмотра пропусков - !git clone https://github.com/ManzarIMalik/YOLO-Annotation-Tool.git
+
+Для записи в json 1 - os
+Для записи в json 2 - !git clone https://github.com/Taeyoung96/Yolo-to-COCO-format-converter.git
+pip install numpy
+pip install opencv-python
+pip install imagesize
+Для записи в json 3 - !python C:/worning/mashinka/car_numbers/a/Yolo-to-COCO-format-converter/main.py --path C:/worning/mashinka/car_numbers/new/images/ --output ../data.json
+
+==================================B===================================
+
+Посмотреть какую куду установить
+Установить PyTorch с сайта
+
+Для импорта данных из одного файла - json
+
+Для разделения данных - Scikit-learn
+
+Для создания папок - os
+
+Для переноса файлов - shutil
+
+!git clone https://github.com/ultralytics/yolov5
+!pip install -r yolov5/requirements.txt
+!cd /content/yolov5
+
+Для копирования папок - distutils
+
+обучение - !python yolov5/train.py --data data.yaml --weights yolov5s.pt --epochs 10 --device 0 --batch-size 6
+
+Для обрезки фото - yolov5/detect.py/run --- yolov5.detect import run
+
+Для считывания текста - easyocr
+
+Для апи - streamlit, PIL
