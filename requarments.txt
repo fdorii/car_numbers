@@ -1,0 +1,328 @@
+///A///
+- разархивирование-
+import zipfile
+def unzip(file, path): # функция для разархивирования
+    with zipfile.ZipFile(file, 'r') as zip_file:
+        zip_file.extractall(path)
+# file - путь от куда
+# path - путь куда
+
+- копирование папок -
+
+import os -------------------------------
+from distutils.dir_util import copy_tree ----------------------------------
+
+
+content_dir = {'1': ['test', 'train', 'valid'], '3': ['train', 'valid']}
+
+data_root = 'C:/worning/mashinka/car_numbers/all'
+
+new_folder = 'C:/worning/mashinka/car_numbers/new'
+mode = 0o777
+# создаем папку куда будем копировать файлы
+if not os.path.exists(new_folder):
+   os.mkdir(new_folder, mode)
+for sub_dir in content_dir:
+    print(content_dir[sub_dir])
+    for content in content_dir[sub_dir]:
+        print(content)
+        path_to_content = sub_dir + "/" + content
+        dir_to_move = data_root + '/' + path_to_content
+        print(dir_to_move)
+        # копируем файлы
+        copy_tree(dir_to_move, new_folder)
+
+- копирование файлов в папку - 
+
+# создаем папку куда будем копировать файлы
+if not os.path.exists(new_folder):
+   os.mkdir(new_folder, mode)
+for sub_dir in content_dir:
+    print(content_dir[sub_dir])
+    for content in content_dir[sub_dir]:
+        print(content)
+        path_to_content = sub_dir + "/" + content
+        dir_to_move = data_root + '/' + path_to_content
+        print(dir_to_move)
+        for x in os.listdir(dir_to_move):
+            if x.endswith('.jpg') or x.endswith('.PNG') or x.endswith('.jpeg'):
+                print(x)
+                copy2(dir_to_move+ '/' + x, new_folder)
+
+- проверка кол-во данных -
+
+from pathlib import Path
+
+path_back = Path('C:/Users/admin/Desktop/Lipatnikova/А/Data/images')
+print('Сумма фотографий:', sum(1 for x in path_back.rglob('*') if x.is_file()))
+
+- копирование данных в одну папку -
+
+copy_tree('C:/Users/admin/Desktop/Lipatnikova/А/Data/images', 'C:/Users/admin/Desktop/Lipatnikova/А/Data/all')
+copy_tree('C:/Users/admin/Desktop/Lipatnikova/А/Data/labels', 'C:/Users/admin/Desktop/Lipatnikova/А/Data/all')
+
+- создание файла со всеми названиями -
+
+# создаём файл содержащий названия каждого файла в объединённой папке
+import os 
+with open("C:/Users/admin/Desktop/Lipatnikova/А/Data/all/all.txt",'w') as a: 
+    for path, subdirs, files in os.walk('C:/Users/admin/Desktop/Lipatnikova/А/Data/all'):
+        for file in files:
+            f = os.path.join(path, file)
+            a.write(str(f)+os.linesep)
+
+- преобразование формата yolo в json -
+
+!python C:/Users/admin/Desktop/Lipatnikova/А/Yolo-to-COCO-format-converter/main.py --path C:/Users/admin/Desktop/Lipatnikova/А/Data/all/ --output C:/Users/admin/Desktop/Lipatnikova/А/Data/all/data.json
+
+///B///
+
+- разархивирование -
+
+import zipfile
+    
+def unzip(file, path): # функция для разархивирования
+    with zipfile.ZipFile(file, 'r') as zip_file:
+        zip_file.extractall(path)
+# file - путь от куда
+# path - путь куда
+
+- json -
+
+import json 
+# разделяем данные в списки изображений и разметки
+# открываем файл json
+f = open('C:/Users/admin/Desktop/Lipatnikova/B/Datas/Data/all/data.json')
+
+# читаем файл json
+data = json.load(f)
+
+# забираем разметку из общего файла
+labels = data['annotations']
+
+import os
+# забираем данные
+images = [os.path.join('C:/Users/admin/Desktop/Lipatnikova/B/Datas/Data/images', x) for x in os.listdir('C:/Users/admin/Desktop/Lipatnikova/B/Datas/Data/images')]
+
+- дублируем labels -
+
+# Так как для загрузки в нашу модель данные разметки должны быть в отдельных файлах мы дублируем их из папки с ними, для дальнейшей разбивки на тестовые, обучающие и валидационные.
+labels = [os.path.join('C:/Users/admin/Desktop/Lipatnikova/B/Datas/Data/labels', x) for x in os.listdir('C:/Users/admin/Desktop/Lipatnikova/B/Datas/Data/labels')]
+
+- тестовые и тд -
+
+from sklearn.model_selection import train_test_split 
+# производим разделение всех наших данных на Тренировочные и валидационные
+train_images, val_images, train_annotations, val_annotations = train_test_split(images, labels, test_size=0.15, random_state=42)
+# валидационные данные делим на тестовые и валидационные, чтобы одни использовать для тестирования пока обучается, а вторые для тестирования после обучения
+val_images, test_images, val_annotations, test_annotations = train_test_split(val_images, val_annotations, test_size=0.5, random_state=42)
+
+- создание папок -
+
+import os
+# Создаем папки куда будем переносить наши разбитые на 3 набора данные фотографий
+parent = 'C:/Users/admin/Desktop/Lipatnikova/B/new'
+dirs = 'images/train', 'images/val', 'images/test', 'labels/train', 'labels/val', 'labels/test'
+for dir in dirs:
+    path = os.path.join(parent, dir)
+    # проверяем существование папки чтобы не создавать если уже есть
+    if not os.path.exists(path):
+        # создаем папку
+        os.makedirs(path)
+
+- копирование данных по разным папкам -
+
+import shutil
+#Утилитная функция для переноса файлов 
+def move_files_to_folder(list_of_files, destination_folder):
+    for f in list_of_files:
+        try:
+            shutil.copy(f, destination_folder)
+        except:
+            print(f)
+            assert False
+
+# Переносим файлы по из папкам учитывая разделение
+move_files_to_folder(train_images, 'new/images/train')
+move_files_to_folder(val_images, 'new/images/val/')
+move_files_to_folder(test_images, 'new/images/test/')
+move_files_to_folder(train_annotations, 'new/labels/train/')
+move_files_to_folder(val_annotations, 'new/labels/val/')
+move_files_to_folder(test_annotations, 'new/labels/test/')
+
+- создание папок для yolo -
+
+import os
+# Создаем папки куда будем переносить наши данные, чтобы модель их видела и обучалась на них
+parent = 'yolov5'
+dirs = 'dataset/annatations', 'dataset/train/images', 'dataset/train/labels'
+for dir in dirs:
+    path = os.path.join(parent, dir)
+    # проверяем существование папки чтобы не создавать если уже есть
+    if not os.path.exists(path):
+        # создаем папку
+        os.makedirs(path)
+
+- перенос данных в модель -
+
+# функция для копирования папок
+from distutils.dir_util import copy_tree
+# копируем разметку
+copy_tree('C:/Users/admin/Desktop/Lipatnikova/B/Datas/Data/labels', 'C:/Users/admin/Desktop/Lipatnikova/B/yolov5/dataset/train/labels')
+# копируем фотографии
+copy_tree('C:/Users/admin/Desktop/Lipatnikova/B/Datas/Data/images', 'C:/Users/admin/Desktop/Lipatnikova/B/yolov5/dataset/train/images')
+# копируем файл json
+from shutil import copy2
+copy2('C:/Users/admin/Desktop/Lipatnikova/B/Datas/Data/all/data.json','C:/Users/admin/Desktop/Lipatnikova/B/yolov5/dataset/annatations')
+
+- yaml -
+
+
+train: new/images/train/ - путь до тестовых данных
+
+val:  new/images/val/ - путь до валидационных данных
+
+test: new/images/test/ - путь до тестовых данных
+
+path: C:/Users/admin/Desktop/Lipatnikova/B - общий путь до папки new
+
+nc: 1 - количество классов
+
+names: ["plate",] - названия классов
+
+- проверка cuda -
+
+import torch 
+print(f"Is CUDA supported by this system?{torch.cuda.is_available()}")
+print(f"CUDA version: {torch.version.cuda}")
+
+# Storing ID of current CUDA device
+cuda_id = torch.cuda.current_device()
+print(f"ID of current CUDA device:{torch.cuda.current_device()}")
+    
+print(f"Name of current CUDA device:{torch.cuda.get_device_name(cuda_id)}")
+print(f"How many devices {torch.cuda.device_count()}")
+
+- обучение -
+
+!python yolov5/train.py --data yolov5/dataset/data.yaml --weights C:/Users/admin/Desktop/Lipatnikova/B/yolov5s.pt --epochs 10 --device 0 --batch-size 6
+
+- обрезка фото -
+
+!!! требуется поменять в функции run данные и сделать чтобы она возвращала путь
+from yolov5.detect import run
+run(source= "C:/Users/admin/Desktop/Lipatnikova/B/new/images/test")
+
+- распознавание текста -
+
+# библеотека с предобученной моделью
+import easyocr
+# загружаем предобученную модель на английских буквам
+reader = easyocr.Reader(['en', ], gpu = True)
+# загружаем в модель фотографию и сохраняем результат
+_, text, __ = reader.readtext('C:/Users/admin/Desktop/Lipatnikova/B/yolov5/runs/detect/exp4/crops/plate/car16.jpg')[0]
+print(text)
+
+- АПИ -
+
+import streamlit as st
+from PIL import Image
+# функция для обрезки фотографий
+from yolov5.detect import run
+# библиотека для чтения текста с фото
+import easyocr
+
+# функция для получения фотографий
+def get_foto(link = False, foto = False):
+    import os
+    try:
+        if link: 
+            dir_name = str(run(source=link, save_crop=True)) + '/crops/plate/'
+        elif foto:
+            dir_name = str(run(source=foto, save_crop=True)) + '/crops/plate/'
+        imgs = os.listdir(dir_name)
+        print(imgs, dir_name)
+        return imgs, dir_name
+    except:
+        st.write('Не найдена папка | Номер на фотографии не найден.')
+        return 'no', 'no'
+
+# функция для получения результата
+def get_text(images, path, reader):
+
+    strok = []
+
+    try:
+        for img in images:
+            image = Image.open(path + img)
+            st.image(image)
+            img_text = reader.readtext(f'{path}{img}')
+    except:
+        img_text=[(0, 'Текст не найден', 0)]
+
+    final_text = ""
+
+    for _, text, __ in img_text: # _ = bounding box, text = text and __ = confident level
+        final_text += " "
+        final_text += text
+    strok.append(final_text)
+    st.write('Номер: ', strok[0])
+    return strok[0]
+
+def main():
+
+    st.write('У вас есть возможность загрузить фотографии в модель как по ссылке, так и загрузив саму фотографию. \n При вводе строки и загрузки фотографии, поиск будет проходить по ссылке, то есть при загрузки фотографии следует очистить строку с ссылкой или путём. ')
+
+    link = st.text_input('Введите ссылку или путь до фотографии: ')
+
+    st.write('Если вы хотите загрузить фотографию, загружайте её из папки C:/Users/admin/Desktop/Lipatnikova/B/')
+
+    foto = st.file_uploader('Загрузите фотографию')
+    if foto:
+        foto = 'C:/Users/admin/Desktop/Lipatnikova/B/' + foto.name
+
+    button = st.button('Распознать')
+
+    if button:
+        reader = easyocr.Reader(['en',], gpu = True)
+        img, path = get_foto(link, foto)
+
+        get_text(img, path, reader)
+    return get_foto, get_text
+
+main()
+
+- UNIT тесты -
+
+# библиотека для тестирования
+import unittest
+# функции для получения фото и результата
+from api import get_text, get_foto
+# библеотека для считывания текста
+import easyocr
+
+
+class TestGetResult(unittest.TestCase):
+    # аргумент, который хранит в себе модель способную считывать англ буквы с картинки
+    reader = easyocr.Reader(['en',], gpu = True)
+    def setUp(self):
+        # копируем функцию для получения фото
+        self.foto = get_foto
+        # копируем функция для получения результата
+        self.text = get_text
+    # проверка на поиск фотографии по пути и получение пути к фотографии и её имени
+    def test_get_foto_one(self):
+        self.assertEqual(self.foto(link='C:/Users/admin/Desktop/Lipatnikova/B/car16.jpg'), ( ['car16.jpg'] , f'B\yolov5\runs\detect\exp36/crops/plate/'))
+    # проверка на поиск фотографии по пути при не правильном пути
+    def test_get_foto_two(self):
+        self.assertEqual(self.foto(link='car.jpg'), ('no' , 'no'))
+    # проверка на получение результата при существующих и правильных данных
+    def test_get_text_one(self):
+        self.assertEqual(self.text(['car16.jpg'] , 'B/yolov5/runs/detect/exp47/crops/plate/', self.reader), ' DL 3 CAY 9324')
+    # проверка на получение результата при не существующих и не правильных данных
+    def test_get_text_two(self):
+        self.assertEqual(self.text('no' , 'no', self.reader), ' Текст не найден')
+
+
+if __name__ == "__main__":
+  unittest.main()
